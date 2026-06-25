@@ -2,16 +2,21 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_API_KEY;
 
-const prompt =
-  req.body?.prompt ||
-  req.body?.message ||
-  "";
+  console.log("BODY =", JSON.stringify(req.body));
 
-if (!prompt) {
-  return res.status(400).json({
-    error: "Prompt is empty"
-  });
-}
+  const prompt =
+    req.body?.prompt ||
+    req.body?.message ||
+    "";
+
+  console.log("PROMPT =", prompt);
+
+  if (!prompt) {
+    return res.status(400).json({
+      error: "Prompt is empty"
+    });
+  }
+
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
@@ -35,5 +40,7 @@ if (!prompt) {
 
   const data = await response.json();
 
-  res.status(200).json(data);
+  console.log("GEMINI RESPONSE =", JSON.stringify(data));
+
+  return res.status(200).json(data);
 }
