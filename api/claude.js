@@ -2,14 +2,10 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GEMINI_API_KEY;
 
-console.log("BODY =", JSON.stringify(req.body));
-console.log("PROMPT =", prompt);
   const prompt =
     req.body?.prompt ||
     req.body?.message ||
     "";
-
-  console.log("PROMPT =", prompt);
 
   if (!prompt) {
     return res.status(400).json({
@@ -38,8 +34,7 @@ console.log("PROMPT =", prompt);
     }
   );
 
-const data = await response.json();
-  console.log("GEMINI =", JSON.stringify(data));
+  const data = await response.json();
 
   return res.status(200).json(data);
 }
