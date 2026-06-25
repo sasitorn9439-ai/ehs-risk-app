@@ -40,7 +40,7 @@ export default async function handler(req, res) {
 
   const data = await response.json();
 
-  console.log("GEMINI RESPONSE =", JSON.stringify(data));
+  console.log("GEMINI =", JSON.stringify(data));
 
   return res.status(200).json(data);
 }
