@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EHS Risk Assessment AI · MCAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.33.0/dist/tabler-icons.min.css" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7F6F3;
+  --surface: #FFFFFF;
+  --border: #E4E2DC;
+  --border-strong: #C8C6BE;
+  --text: #1A1917;
+  --text-muted: #6B6A65;
+  --text-hint: #9E9D98;
+  --danger-bg: #FCEBEB;
+  --danger: #A32D2D;
+  --danger-border: #F09595;
+  --warning-bg: #FAEEDA;
+  --warning: #854F0B;
+  --warning-border: #EF9F27;
+  --success-bg: #EAF3DE;
+  --success: #3B6D11;
+  --success-border: #97C459;
+  --info-bg: #E6F1FB;
+  --info: #185FA5;
+  --info-border: #85B7EB;
+  --accent: #D85A30;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-logo {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 17px;
+}
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-sub { font-size: 12px; color: var(--text-muted); margin-left: 4px; }
+
+.main { max-width: 760px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.card-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 1rem;
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: .04em;
+}
+.card-header i { font-size: 16px; color: var(--accent); }
+
+.form-row { margin-bottom: 1rem; }
+.form-row:last-child { margin-bottom: 0; }
+.form-label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 5px; }
+
+input[type=text], select, textarea {
+  width: 100%;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .15s;
+  resize: vertical;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+textarea { min-height: 72px; }
+select { cursor: pointer; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media(max-width:520px){ .grid2 { grid-template-columns: 1fr; } }
+
+.ai-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--info); background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: 20px;
+  padding: 5px 12px; cursor: pointer;
+  transition: opacity .15s;
+  margin-top: 5px;
+}
+.ai-btn:hover { opacity: .8; }
+.ai-btn:disabled { opacity: .4; cursor: not-allowed; }
+.ai-btn i { font-size: 14px; }
+
+.suggestion-box {
+  margin-top: 8px;
+  background: #FAFAF8;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: none;
+}
+.suggestion-box.show { display: block; }
+.sug-hint { font-size: 12px; color: var(--text-hint); margin-bottom: 8px; }
+.tag-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 11px; border-radius: 20px; font-size: 13px;
+  background: #F1EFE8; color: var(--text-muted);
+  border: 1px solid var(--border);
+  cursor: pointer; transition: all .12s; user-select: none;
+}
+.tag:hover { background: #E8E6DE; }
+.tag.active {
+  background: var(--info-bg); color: var(--info);
+  border-color: var(--info-border);
+}
+
+.selected-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px; min-height: 4px; }
+.sel-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px; font-size: 13px;
+  background: var(--info-bg); color: var(--info);
+  border: 1px solid var(--info-border);
+}
+.sel-tag button {
+  background: none; border: none; cursor: pointer;
+  color: var(--info); font-size: 13px; padding: 0; line-height: 1;
+  display: flex; align-items: center;
+}
+
+.analyze-btn {
+  width: 100%; padding: 12px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 15px; font-weight: 600;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .15s;
+  margin-top: .5rem;
+}
+.analyze-btn:hover { opacity: .9; }
+.analyze-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.loading-block {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text-muted); font-size: 14px;
+  padding: 1rem 0;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+.dot:nth-child(2){ animation-delay:.2s }
+.dot:nth-child(3){ animation-delay:.4s }
+@keyframes pulse { 0%,100%{opacity:.25} 50%{opacity:1} }
+
+.result { margin-top: 1.25rem; }
+
+.risk-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 14px; font-weight: 600; margin-bottom: 1rem;
+}
+.risk-CRITICAL { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
+.risk-HIGH { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning-border); }
+.risk-MEDIUM { background: #FFF8E1; color: #7B5800; border: 1px solid #FAC775; }
+.risk-LOW { background: var(--success-bg); color: var(--success); border: 1px solid var(--success-border); }
+.risk-VERY-LOW { background: #F0FAE8; color: #27500A; border: 1px solid #C0DD97; }
+
+.scores { display: grid; grid-template-columns: repeat(3, 1fr) 1.6fr; gap: 8px; margin-bottom: 1rem; }
+@media(max-width:520px){ .scores { grid-template-columns: repeat(2,1fr); } }
+.score-box {
+  background: #FAFAF8; border-radius: var(--radius-sm);
+  padding: 10px 12px; text-align: center;
+  border: 1px solid var(--border);
+}
+.score-val { font-size: 22px; font-weight: 600; color: var(--text); }
+.score-lbl { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
+.sec { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .6rem; }
+
+.hazard-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: .75rem; }
+.h-tag {
+  padding: 3px 11px; border-radius: 20px; font-size: 13px;
+  background: #FFF0E8; color: #7A2D10;
+  border: 1px solid #F5C4B3;
+}
+
+.action-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.action-item:last-child { border-bottom: none; }
+.action-num { font-size: 11px; font-weight: 600; color: var(--text-hint); min-width: 18px; margin-top: 2px; }
+.action-pri { font-size: 11px; font-weight: 600; }
+.pri-high { color: var(--danger); }
+.pri-mid { color: var(--warning); }
+.pri-low { color: var(--text-muted); }
+
+.summary-box {
+  background: #FAFAF8; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  padding: 12px 14px;
+  font-size: 14px; line-height: 1.7; color: var(--text);
+}
+
+.legal-note {
+  font-size: 12px; color: var(--text-muted);
+  display: flex; align-items: flex-start; gap: 5px; margin-bottom: .75rem;
+}
+
+.matrix-wrap { font-size: 10px; color: var(--text-muted); }
+.matrix-title { text-align: center; margin-bottom: 4px; font-size: 10px; }
+.mx-row { display: flex; gap: 2px; margin-bottom: 2px; align-items: center; }
+.mx-lbl { width: 12px; text-align: right; margin-right: 3px; font-size: 9px; }
+.mx-cell { width: 22px; height: 22px; border-radius: 3px; }
+.mx-cell.active { outline: 2px solid #1A1917; }
+.mx-axis { display: flex; gap: 2px; padding-left: 17px; margin-top: 2px; }
+.mx-axis span { width: 22px; text-align: center; font-size: 9px; }
+
+.error-msg { font-size: 13px; color: var(--danger); padding: .5rem 0; }
+
+.api-setup {
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 13px; color: var(--info);
+  margin-bottom: 1rem;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo"><i class="ti ti-shield-check"></i></div>
+  <span class="topbar-title">EHS Risk Assessment AI</span>
+  <span class="topbar-sub">· Powered by Claude</span>
+</div>
+
+<div class="main">
+
+  <div class="api-setup" id="apiSetup">
+    <i class="ti ti-info-circle" style="font-size:16px;margin-top:1px;flex-shrink:0"></i>
+    <div>ระบบใช้ Anthropic API — ตั้งค่า <code>ANTHROPIC_API_KEY</code> ใน Vercel Environment Variables แล้ว Deploy ใหม่</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="ti ti-clipboard-list"></i> ข้อมูลกิจกรรม</div>
+    <div class="form-row">
+      <label class="form-label">ชื่อกิจกรรม / งานที่ประเมิน *</label>
+      <input type="text" id="activity" placeholder="เช่น การเชื่อมโลหะที่ความสูง 4 เมตร" oninput="onActivityChange()" />
+    </div>
+    <div class="grid2">
+      <div class="form-row">
+        <label class="form-label">แผนก / พื้นที่</label>
+        <input type="text" id="dept" placeholder="เช่น โรงงาน A, Production" />
+      </div>
+      <div class="form-row">
+        <label class="form-label">ประเภทงาน</label>
+        <select id="worktype" onchange="onActivityChange()">
+          <option value="">-- เลือก --</option>
+          <option>งาน Routine ปกติ</option>
+          <option>งาน Non-routine / พิเศษ</option>
+          <option>งานซ่อมบำรุง</option>
+          <option>งานรับเหมา / ผู้รับเหมา</option>
+          <option>งานก่อสร้าง / ติดตั้ง</option>
+          <option>งานเคมี / อันตราย</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="ti ti-alert-triangle"></i> อันตรายที่พบ</div>
+    <div class="selected-tags" id="sel-hazard"></div>
+    <button class="ai-btn" id="btn-hazard" onclick="suggestField('hazard')" disabled>
+      <i class="ti ti-sparkles"></i> AI แนะนำอันตราย
+    </button>
+    <div class="suggestion-box" id="sug-hazard">
+      <div class="sug-hint">กดเลือกที่ต้องการ (เลือกได้หลายข้อ)</div>
+      <div class="tag-wrap" id="pick-hazard"></div>
+    </div>
+    <div class="form-row" style="margin-top:10px;margin-bottom:0">
+      <label class="form-label">พิมพ์เพิ่มเติม</label>
+      <textarea id="hazards" placeholder="อธิบายอันตรายเพิ่มเติม..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="ti ti-shield"></i> มาตรการควบคุมที่มีอยู่</div>
+    <div class="selected-tags" id="sel-control"></div>
+    <button class="ai-btn" id="btn-control" onclick="suggestField('control')" disabled>
+      <i class="ti ti-sparkles"></i> AI แนะนำมาตรการ
+    </button>
+    <div class="suggestion-box" id="sug-control">
+      <div class="sug-hint">กดเลือกที่ต้องการ (เลือกได้หลายข้อ)</div>
+      <div class="tag-wrap" id="pick-control"></div>
+    </div>
+    <div class="form-row" style="margin-top:10px;margin-bottom:0">
+      <label class="form-label">พิมพ์เพิ่มเติม</label>
+      <textarea id="controls" placeholder="มาตรการที่มีอยู่แล้ว..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="ti ti-users"></i> การสัมผัส (Exposure)</div>
+    <div class="selected-tags" id="sel-exposure"></div>
+    <button class="ai-btn" id="btn-exposure" onclick="suggestField('exposure')" disabled>
+      <i class="ti ti-sparkles"></i> AI แนะนำข้อมูลการสัมผัส
+    </button>
+    <div class="suggestion-box" id="sug-exposure">
+      <div class="sug-hint">กดเลือกที่ต้องการ (เลือกได้หลายข้อ)</div>
+      <div class="tag-wrap" id="pick-exposure"></div>
+    </div>
+    <div class="form-row" style="margin-top:10px;margin-bottom:0">
+      <label class="form-label">พิมพ์เพิ่มเติม</label>
+      <textarea id="exposure" placeholder="เช่น จำนวนคน, ความถี่, ระยะเวลา..." style="min-height:56px"></textarea>
+    </div>
+  </div>
+
+  <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+    <i class="ti ti-brain"></i> วิเคราะห์ความเสี่ยงด้วย AI
+  </button>
+
+  <div id="output"></div>
+</div>
+
+<script>
+const API = '/api/claude';
+let debT = null;
+const state = { hazard: [], control: [], exposure: [] };
+
+function onActivityChange() {
+  clearTimeout(debT);
+  debT = setTimeout(() => {
+    const ok = document.getElementById('activity').value.trim().length > 4;
+    ['btn-hazard','btn-control','btn-exposure'].forEach(id => {
+      document.getElementById(id).disabled = !ok;
+    });
+  }, 300);
+}
+
+async function callClaude(prompt) {
+  const res = await fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || data.error);
+  return data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+}
+
+async function suggestField(type) {
+  const activity = document.getElementById('activity').value.trim();
+  const worktype = document.getElementById('worktype').value;
+  const dept = document.getElementById('dept').value.trim();
+  if (!activity) return;
+
+  const btn = document.getElementById('btn-' + type);
+  const sug = document.getElementById('sug-' + type);
+  const pick = document.getElementById('pick-' + type);
+  btn.disabled = true;
+  sug.classList.add('show');
+  pick.innerHTML = '<div class="loading-block"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span>AI กำลังแนะนำ...</span></div>';
+
+  const prompts = {
+    hazard: `You are an EHS expert. For work activity: "${activity}" (type: ${worktype||'ไม่ระบุ'}, area: ${dept||'ไม่ระบุ'}), list 7 specific workplace hazards in Thai. Return ONLY a JSON array of strings, no markdown, no explanation.`,
+    control: `You are an EHS expert. For work activity: "${activity}" (type: ${worktype||'ไม่ระบุ'}), list 7 safety control measures in Thai using hierarchy of controls (Engineering Controls first, then Admin, then PPE). Return ONLY a JSON array of strings.`,
+    exposure: `You are an EHS expert. For work activity: "${activity}" (type: ${worktype||'ไม่ระบุ'}, area: ${dept||'ไม่ระบุ'}), suggest 5 typical exposure scenarios in Thai (workers count, frequency, duration). Return ONLY a JSON array of strings.`
+  };
+
+  try {
+    const text = await callClaude(prompts[type]);
+    const items = JSON.parse(text.replace(/```json|```/g, '').trim());
+    pick.innerHTML = '';
+    items.forEach(item => {
+      const t = document.createElement('span');
+      t.className = 'tag' + (state[type].includes(item) ? ' active' : '');
+      t.textContent = item;
+      t.onclick = () => toggleTag(type, item, t);
+      pick.appendChild(t);
+    });
+  } catch(e) {
+    pick.innerHTML = '<span style="color:var(--danger);font-size:13px">เกิดข้อผิดพลาด: ' + e.message + '</span>';
+  }
+  btn.disabled = false;
+}
+
+function toggleTag(type, item, el) {
+  const arr = state[type];
+  const idx = arr.indexOf(item);
+  if (idx > -1) { arr.splice(idx, 1); el.classList.remove('active'); }
+  else { arr.push(item); el.classList.add('active'); }
+  renderSelected(type);
+}
+
+function renderSelected(type) {
+  const div = document.getElementById('sel-' + type);
+  div.innerHTML = '';
+  state[type].forEach(item => {
+    const s = document.createElement('span');
+    s.className = 'sel-tag';
+    s.innerHTML = item + '<button onclick="removeTag(\'' + type + '\',\'' + item.replace(/'/g,"\\'") + '\',this.parentElement)" aria-label="ลบ"><i class="ti ti-x" style="font-size:12px"></i></button>';
+    div.appendChild(s);
+  });
+}
+
+function removeTag(type, item, el) {
+  const idx = state[type].indexOf(item);
+  if (idx > -1) state[type].splice(idx, 1);
+  el.remove();
+  const pick = document.getElementById('pick-' + type);
+  if (pick) pick.querySelectorAll('.tag').forEach(t => { if(t.textContent === item) t.classList.remove('active'); });
+}
+
+async function analyze() {
+  const activity = document.getElementById('activity').value.trim();
+  const dept = document.getElementById('dept').value.trim();
+  const worktype = document.getElementById('worktype').value;
+  const hazardsExtra = document.getElementById('hazards').value.trim();
+  const controlsExtra = document.getElementById('controls').value.trim();
+  const exposureExtra = document.getElementById('exposure').value.trim();
+
+  const hazards = [...state.hazard, ...(hazardsExtra ? [hazardsExtra] : [])].join('\n');
+  const controls = [...state.control, ...(controlsExtra ? [controlsExtra] : [])].join('\n');
+  const exposure = [...state.exposure, ...(exposureExtra ? [exposureExtra] : [])].join('\n');
+
+  if (!activity || !hazards) {
+    document.getElementById('output').innerHTML = '<div class="error-msg">กรุณาระบุชื่อกิจกรรมและอันตรายที่พบ</div>';
+    return;
+  }
+
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  document.getElementById('output').innerHTML = '<div class="loading-block"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span>AI กำลังวิเคราะห์ความเสี่ยง...</span></div>';
+
+  const prompt = `You are a senior EHS specialist. Analyze and provide risk assessment in Thai.
+
+Activity: ${activity}
+Department: ${dept || 'ไม่ระบุ'}
+Work Type: ${worktype || 'ไม่ระบุ'}
+Hazards: ${hazards}
+Existing controls: ${controls || 'ไม่มี'}
+Exposure: ${exposure || 'ไม่ระบุ'}
+
+Return ONLY valid JSON (no markdown):
+{"riskLevel":"CRITICAL|HIGH|MEDIUM|LOW|VERY-LOW","likelihood":1-5,"severity":1-5,"riskScore":number,"mainHazards":["Thai"],"potentialConsequences":"Thai","legalReference":"Thai law or empty string","correctiveActions":[{"priority":"ด่วนมาก|ด่วน|ปานกลาง","action":"Thai","timeframe":"ทันที|7 วัน|30 วัน|90 วัน"}],"summary":"Thai 2-3 sentences"}`;
+
+  try {
+    const text = await callClaude(prompt);
+    const r = JSON.parse(text.replace(/```json|```/g,'').trim());
+    renderResult(r, activity);
+  } catch(e) {
+    document.getElementById('output').innerHTML = '<div class="error-msg">เกิดข้อผิดพลาด: ' + e.message + '</div>';
+  }
+  btn.disabled = false;
+}
+
+function buildMatrix(l, s) {
+  function cc(r,c){ const v=r*c; return v>=16?'#F09595':v>=9?'#EF9F27':v>=4?'#FAC775':'#C0DD97'; }
+  let h = '<div class="matrix-wrap"><div class="matrix-title">Risk Matrix</div>';
+  for(let r=5;r>=1;r--){
+    h += '<div class="mx-row"><span class="mx-lbl">'+r+'</span>';
+    for(let c=1;c<=5;c++) h += `<div class="mx-cell${(r===l&&c===s)?' active':''}" style="background:${cc(r,c)}"></div>`;
+    h += '</div>';
+  }
+  h += '<div class="mx-axis">';
+  for(let c=1;c<=5;c++) h += '<span>'+c+'</span>';
+  return h + '</div></div>';
+}
+
+function renderResult(r, activity) {
+  const lvl = {CRITICAL:'วิกฤต',HIGH:'สูง',MEDIUM:'ปานกลาง',LOW:'ต่ำ','VERY-LOW':'ต่ำมาก'};
+  const ico = {CRITICAL:'ti-alert-octagon',HIGH:'ti-alert-triangle',MEDIUM:'ti-alert-circle',LOW:'ti-info-circle','VERY-LOW':'ti-circle-check'};
+  const htags = (r.mainHazards||[]).map(h=>`<span class="h-tag">${h}</span>`).join('');
+  const acts = (r.correctiveActions||[]).map((a,i)=>`
+    <div class="action-item">
+      <span class="action-num">${i+1}</span>
+      <div style="flex:1">
+        <div class="action-pri ${a.priority==='ด่วนมาก'?'pri-high':a.priority==='ด่วน'?'pri-mid':'pri-low'}">${a.priority} · ${a.timeframe}</div>
+        <div style="margin-top:3px">${a.action}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('output').innerHTML = `
+  <div class="result card">
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px">${activity}</div>
+    <span class="risk-badge risk-${r.riskLevel}">
+      <i class="ti ${ico[r.riskLevel]||'ti-alert'}"></i>
+      ระดับความเสี่ยง: ${lvl[r.riskLevel]||r.riskLevel}
+    </span>
+    <div class="scores">
+      <div class="score-box"><div class="score-val">${r.riskScore}</div><div class="score-lbl">คะแนนรวม</div></div>
+      <div class="score-box"><div class="score-val">${r.likelihood}/5</div><div class="score-lbl">โอกาสเกิด</div></div>
+      <div class="score-box"><div class="score-val">${r.severity}/5</div><div class="score-lbl">ความรุนแรง</div></div>
+      <div class="score-box">${buildMatrix(r.likelihood,r.severity)}</div>
+    </div>
+    <div class="divider"></div>
+    <div class="sec">อันตรายหลัก</div>
+    <div class="hazard-tags">${htags}</div>
+    <div class="sec">ผลที่อาจเกิดขึ้น</div>
+    <p style="font-size:13px;line-height:1.6;margin-bottom:.75rem">${r.potentialConsequences}</p>
+    ${r.legalReference ? `<div class="legal-note"><i class="ti ti-file-text" style="font-size:14px;flex-shrink:0"></i>${r.legalReference}</div>` : ''}
+    <div class="divider"></div>
+    <div class="sec">มาตรการแก้ไข / ป้องกัน</div>
+    ${acts}
+    <div class="divider"></div>
+    <div class="sec">สรุปโดย AI</div>
+    <div class="summary-box">${r.summary}</div>
+  </div>`;
+}
+</script>
+</body>
+</html>
